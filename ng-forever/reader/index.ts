@@ -43,7 +43,7 @@ class Reader {
     }
 
     // Helper function to scan a directory and get files based on job file types
-    private getFilesToScan(dir: string): string[] {
+    private getFilesToScan(dir: string, jobsFileTypes: string[]): string[] {
         let filesToScan: string[] = [];
 
         let items: string[];
@@ -68,15 +68,31 @@ class Reader {
                         continue;
                     }
                     // Recursively scan subdirectories
-                    filesToScan = filesToScan.concat(this.getFilesToScan(fullPath));
+                    filesToScan = filesToScan.concat(this.getFilesToScan(fullPath, jobsFileTypes));
                 } else {
-                    filesToScan.push(fullPath);
+                    if (jobsFileTypes.some(type => fullPath.endsWith(type))) {
+                        filesToScan.push(fullPath);
+                    }
                 }
             } catch (error: any) {
                 this.log.error(`Error processing "${fullPath}": ${error.message}`);
                 this.errors++;
             }
         }
+
+        filesToScan.sort((fileA, fileB) => {
+            const getExt = (file: any) => {
+                if (!file || typeof file !== 'string') return '';
+                const parts = file.split('.');
+                return parts.length > 1 ? parts?.pop()?.toLowerCase() : '';
+            };
+
+            const extA = getExt(fileA);
+            const extB = getExt(fileB);
+
+            return (extA && extB) ? extA.localeCompare(extB) : 0;
+        });
+
         return filesToScan;
     }
 
@@ -84,39 +100,37 @@ class Reader {
     public scan(directory: string): ScanResult {
         this.log.info('Starting scan...');
 
-        const filesToScan = this.getFilesToScan(directory);
+        const jobsFileTypes = this.jobs.map(job => job.fileType);
+        const filesToScan = this.getFilesToScan(directory, jobsFileTypes);
         let issueCounter = 0;
-        // Iterate over all files
-        filesToScan.forEach((file, i) => {
-            this.filesScanned++;
-            this.log.debug(`Scanning file: "${file}"`);
-            const content = fs.readFileSync(file, 'utf8');
 
-            // Iterate over all jobs and check if the job fileType matches the current file
-            this.jobs.forEach((job, k) => {
+        this.jobs.forEach((job) => {
 
-                if (file.endsWith(job.fileType)) {  // Use job's fileType directly
+            filesToScan.forEach((file) => {
+                this.filesScanned++;
+                this.log.debug(`Scanning file: "${file}"`);
+                const content = fs.readFileSync(file, 'utf8');
+
+                if (file.endsWith(job.fileType)) {
                     const rawIssues = job.scanLines(content);
-                    rawIssues.forEach((issue, j) => {
+                    rawIssues.forEach((issue) => {
                         issueCounter++;
-                        const {code, filePath,isCommented, line} = this.formatIssue(file, issue.line, issue.code, issue.isCommented);
-                        this.log.system(`Issue #${issueCounter}:`);
-                        this.log.system(`   File: ${filePath}`);
-                        this.log.system(`   Line: ${line}`);
-                        this.log.system(`   Code: ${code}`);
+                        const { code, filePath, isCommented, line } = this.formatIssue(file, issue.line, issue.code, issue.isCommented);
+                        this.log.issue(issueCounter, filePath, line, code);
                         if (isCommented) {
                             this.log.warn('    Note: This issue is in commented code');
                         }
-                        this.log.system(''); // Empty line for readability
                     });
                 }
 
-                // job.fixSuggestion?.forEach((suggestion, index) => {
-                //     this.log.system(suggestion);
-                // })
-                
             });
+
+            job.fixSuggestion?.forEach((suggestion, index) => {
+                this.log.system(suggestion);
+            })
+
         });
+
 
         return {
             stats: {

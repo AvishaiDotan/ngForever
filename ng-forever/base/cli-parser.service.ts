@@ -48,6 +48,7 @@ export class CliParserService {
     private parseValue(value: string): any {
         if (value === "true") return true;
         if (value === "false") return false;
+        if (typeof value === "string") return value;
         if (!isNaN(Number(value))) return Number(value);
         return value;
     }

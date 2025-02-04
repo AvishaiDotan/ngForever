@@ -9,7 +9,6 @@ import { FindNgForWithoutTrackByCallbackJob } from "./jobs/FindNgForWithoutTrack
 // CliConfig
 import { CliParserConfig, CliParserService } from "./base/cli-parser.service";
 const cliParserConfig: CliParserConfig = CliParserService.getInstance().getConfig();
-console.log("🚀 ~ cliParserConfig:", cliParserConfig)
 
 
 const loggerService = LoggerService.getInstance(cliParserConfig.logLevel);

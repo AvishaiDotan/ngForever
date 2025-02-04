@@ -10,6 +10,7 @@ enum LogLevel {
 
 export interface ILoggerService {
   printWelcome(): void;
+  issue(issueNumber: number, file: string, line: number, code: string): void
   info(message: string): void;
   warn(message: string): void;
   error(message: string): void;
@@ -44,6 +45,19 @@ class LoggerService implements ILoggerService {
       `));
   }
 
+  public issue(issueNumber: number, file: string, line: number, code: string): void {
+    const separator = chalk.gray('─'.repeat(80));
+    
+    console.log('\n' + separator);
+    console.log(chalk.yellow(`Issue #${issueNumber}`));
+    console.log(separator);
+    console.log(chalk.blue('File:    ') + chalk.white(file));
+    console.log(chalk.blue('Line:    ') + chalk.white(line));
+    console.log(chalk.blue('Code:    ') + chalk.white(code));
+    console.log(separator + '\n');
+}
+
+
   private formatMessage(level: LogLevel, message: string): string {
     const timestamp = new Date().toISOString();
     let coloredLevel;
@@ -62,8 +76,8 @@ class LoggerService implements ILoggerService {
         coloredLevel = chalk.magenta(level);
         break;
       case LogLevel.SYSTEM:
-        const uncoloredMessage =  message;
-        return `${uncoloredMessage}`;
+        message = chalk.blue(message);
+        return `${message}`;
     }
 
     return `[${timestamp}] ${coloredLevel}: ${message}`;
