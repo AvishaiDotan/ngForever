@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { ScanResult } from "../reader";
 
 enum LogLevel {
   INFO = "INFO",
@@ -11,6 +12,7 @@ enum LogLevel {
 export interface ILoggerService {
   printWelcome(): void;
   issue(issueNumber: number, file: string, line: number, code: string): void
+  stats(result: ScanResult): void;
   info(message: string): void;
   warn(message: string): void;
   error(message: string): void;
@@ -47,7 +49,7 @@ class LoggerService implements ILoggerService {
 
   public issue(issueNumber: number, file: string, line: number, code: string): void {
     const separator = chalk.gray('─'.repeat(80));
-    
+
     console.log('\n' + separator);
     console.log(chalk.yellow(`Issue #${issueNumber}`));
     console.log(separator);
@@ -55,7 +57,20 @@ class LoggerService implements ILoggerService {
     console.log(chalk.blue('Line:    ') + chalk.white(line));
     console.log(chalk.blue('Code:    ') + chalk.white(code));
     console.log(separator + '\n');
-}
+  }
+
+  public stats({stats}: ScanResult): void {
+    const separator = chalk.gray('─'.repeat(80));
+
+    console.log('\n' + separator);
+    console.log(chalk.cyan('Scan Statistics'));
+    console.log(separator);
+    console.log(chalk.blue('Files Scanned:       ') + chalk.green(stats.filesScanned.toString()));
+    console.log(chalk.blue('Directories Scanned: ') + chalk.green(stats.directoriesScanned.toString()));
+    console.log(chalk.blue('Errors Found:        ') +
+      (stats.errors > 0 ? chalk.red(stats.errors.toString()) : chalk.green('0')));
+    console.log(separator + '\n');
+  }
 
 
   private formatMessage(level: LogLevel, message: string): string {

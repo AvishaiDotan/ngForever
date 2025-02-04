@@ -21,5 +21,6 @@ setupService.initialize();
 
 const reader = Reader.getInstance([new FindNgForWithoutTrackByCallbackJob({skipCommented: cliParserConfig.skipCommented})], loggerService);
 const result = reader.scan(cliParserConfig.path);
+loggerService.stats(result);
 
 
