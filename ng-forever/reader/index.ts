@@ -67,6 +67,7 @@ class Reader {
                         this.log.debug(`Skipping excluded directory: "${item}"`);
                         continue;
                     }
+                    this.directoriesScanned++;
                     // Recursively scan subdirectories
                     filesToScan = filesToScan.concat(this.getFilesToScan(fullPath, jobsFileTypes));
                 } else {

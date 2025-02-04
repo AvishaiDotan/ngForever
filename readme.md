@@ -1,106 +1,88 @@
 # ngForever
 
-🔍 Keep your Angular apps fast by never forgetting trackBy in your *ngFor directives!
+Angular optimization and convention checker that helps you find and fix common issues in your Angular applications. Works great as a pre-commit hook!
 
-## Quick Start with npx
+## Features
 
-The fastest way to use ngForever is with npx - no installation needed:
+- 🔍 Automatically detects optimization opportunities
+- ⚡ Improves application performance
+- 🎯 Enforces best practices and conventions
+- 🛠️ Customizable to your project needs
+- 📋 Detailed reporting with file and line references
+
+## Installation
+
+You can install ngForever using npm:
+
+```bash
+npm install ng-forever
+```
+
+Or run it directly using npx:
 
 ```bash
 npx ng-forever
 ```
 
-## Parameters
+## Usage
 
-### Path Selection
+Run ngForever in your Angular project directory:
+
 ```bash
-npx ng-forever --path "./my-angular-project"
+ng-forever [options]
 ```
-- `--path`: Specify which directory to scan (default: current directory)
+
+### Command Line Options
+
+| Option           | Description                              | Default           |
+|-----------------|------------------------------------------|-------------------|
+| `--logLevel`    | Set the logging verbosity               | `INFO`            |
+| `--skipCommented`| Skip checking commented code            | `false`           |
+| `--path`        | Set the directory path to check         | Current directory |
 
 ### Log Levels
-```bash
-npx ng-forever --log-level DEBUG
+
+The following log levels are available:
+- `INFO`: Standard information
+- `WARN`: Warning messages
+- `ERROR`: Error messages
+- `DEBUG`: Detailed debug information
+- `SYSTEM`: System-level messages
+
+## Jobs
+
+ngForever runs a series of jobs to check your Angular application. Each job focuses on specific optimization or convention checks.
+
+### Currently Available Jobs
+
+#### FindNgForWithoutTrackByCallbackJob
+
+Detects `*ngFor` directives that don't implement a `trackBy` callback function, which can lead to performance issues.
+
+Example output:
 ```
-Available levels:
-- `ERROR`: Only show errors
-- `WARN`: Show errors and warnings
-- `INFO`: Normal output (default)
-- `DETAIL`: Detailed information
-- `DEBUG`: All debug information
-
-### Comment Handling
-```bash
-npx ng-forever --skip-commented
-```
-- `--skip-commented`: Ignore *ngFor directives in commented code
-- By default, the tool will check commented code and warn about missing trackBy
-- This is useful because commented code might be re-enabled later
-
-Example of commented code that will be checked by default:
-```html
-<!-- TODO: Re-enable later
-  <div *ngFor="let item of items">
-    {{item}}
-  </div>
--->
-```
-
-## Examples
-
-1. Basic scan of current directory:
-```bash
-npx ng-forever
+Issue #133
+────────────────────────────────────────────────────────────────────────────────
+File:    C:\website-row.component.html
+Line:    113
+Code:    *ngFor="let site of data.flavors"
+────────────────────────────────────────────────────────────────────────────────
 ```
 
-2. Detailed scan of specific path:
-```bash
-npx ng-forever --path "./src/app" --log-level DETAIL
-```
+## Best Practices
 
-3. Ignore commented code with minimal output:
-```bash
-npx ng-forever --skip-commented --log-level ERROR
-```
+1. Run ngForever before committing changes to ensure code quality
+2. Address all reported issues to maintain optimal application performance
+3. Configure the tool according to your project's specific needs
 
-## Global Installation (Alternative)
+## Contributing
 
-If you prefer having the tool always available:
-
-```bash
-# Install globally
-npm install -g ng-forever
-
-# Then use anywhere
-ng-forever
-```
-
-## Example Output
-
-```bash
-[INFO] Starting ngForever Analyzer
-[DETAIL] Target path: ./src/app
-[WARNING] Found issues in: ./src/app/home.component.html
-    File: ./src/app/home.component.html
-    Line: 15
-    Code: <div *ngFor="let item of items">
-```
-
-## Why use trackBy?
-
-Angular's `*ngFor` with `trackBy` can significantly improve performance by helping Angular identify which items have changed. Without `trackBy`, Angular may unnecessarily recreate DOM elements when the reference to your array changes.
-
-## Using in CI/CD
-
-Add to your CI pipeline:
-```bash
-# Package.json script
-"check-ngfor": "npx ng-forever --log-level ERROR"
-
-# Or directly in CI config
-- run: npx ng-forever --log-level ERROR --skip-commented
-```
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT
+MIT - See LICENSE file for details
+
+## Support
+
+If you encounter any issues or have questions, please file an issue on the GitHub repository.

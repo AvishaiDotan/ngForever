@@ -1,6 +1,6 @@
 {
   "name": "ng-forever",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Analyzes Angular templates for *ngFor directives missing trackBy",
   "main": "src/index.js",
   "bin": {

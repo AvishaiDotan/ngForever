@@ -15,3 +15,4 @@ const setupService = setup_service_1.SetupService.getInstance(loggerService);
 setupService.initialize();
 const reader = index_1.Reader.getInstance([new FindNgForWithoutTrackByCallbackJob_1.FindNgForWithoutTrackByCallbackJob({ skipCommented: cliParserConfig.skipCommented })], loggerService);
 const result = reader.scan(cliParserConfig.path);
+loggerService.stats(result);
