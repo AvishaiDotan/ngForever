@@ -7,15 +7,18 @@ export type Issue = {
 interface JobConfig {
     skipCommented: boolean;
     fileType: string;
+    fixSuggestion?: string[]
 }
 
 export class JobBase {
     skipCommented: boolean;
     fileType: string;
+    fixSuggestion?: string[];
 
-    constructor({ skipCommented, fileType }: JobConfig) {
+    constructor({ skipCommented, fileType, fixSuggestion }: JobConfig) {
         this.skipCommented = skipCommented;
         this.fileType = fileType;
+        this.fixSuggestion = fixSuggestion;
     }
 
     // Utility function to check if the line should be processed

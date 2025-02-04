@@ -4,7 +4,8 @@ enum LogLevel {
   INFO = "INFO",
   WARN = "WARN",
   ERROR = "ERROR",
-  DEBUG = "DEBUG"
+  DEBUG = "DEBUG",
+  SYSTEM = "SYSTEM"
 }
 
 export interface ILoggerService {
@@ -13,6 +14,7 @@ export interface ILoggerService {
   warn(message: string): void;
   error(message: string): void;
   debug(message: string): void;
+  system(message: string): void;
   setLogLevel(level: LogLevel): void;
 }
 
@@ -59,9 +61,16 @@ class LoggerService implements ILoggerService {
       case LogLevel.DEBUG:
         coloredLevel = chalk.magenta(level);
         break;
+      case LogLevel.SYSTEM:
+        const uncoloredMessage =  message;
+        return `${uncoloredMessage}`;
     }
 
     return `[${timestamp}] ${coloredLevel}: ${message}`;
+  }
+
+  public system(message: string): void {
+    console.log(this.formatMessage(LogLevel.SYSTEM, message));
   }
 
   public info(message: string): void {

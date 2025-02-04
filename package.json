@@ -7,7 +7,9 @@
     "ng-forever": "./bin/cli.js"
   },
   "scripts": {
-    "start": "tsc && node ./src/index.js"
+    "start": "tsc && node ./src/index.js",
+    "build": "tsc",
+    "test": "node ./src/index.js"
   },
   "files": [
     "bin/",

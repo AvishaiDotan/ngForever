@@ -4,7 +4,17 @@ export class FindNgForWithoutTrackByCallbackJob extends JobBase {
     constructor({ skipCommented }: { skipCommented: boolean }) {
         super({
             skipCommented,
-            fileType: 'html'
+            fileType: 'html',
+            fixSuggestion: [
+                "    1. Add a trackBy function to your component:\n" +
+                "        trackById(index: number, item: any) {\n" +
+                "          return item.id; // Replace with appropriate tracking property\n" +
+                "        }\n",
+            
+                "    2. Update your template:\n" +
+                "        Before: *ngFor=\"let item of items\"\n" +
+                "        After:  *ngFor=\"let item of items; trackBy: trackById\"\n"
+            ]
         });
     }
 

@@ -37,7 +37,7 @@ class Reader {
         return {
             filePath,
             line,
-            code,
+            code: code.trim(),
             isCommented
         };
     }
@@ -85,22 +85,36 @@ class Reader {
         this.log.info('Starting scan...');
 
         const filesToScan = this.getFilesToScan(directory);
-
+        let issueCounter = 0;
         // Iterate over all files
-        filesToScan.forEach(file => {
+        filesToScan.forEach((file, i) => {
             this.filesScanned++;
             this.log.debug(`Scanning file: "${file}"`);
             const content = fs.readFileSync(file, 'utf8');
 
             // Iterate over all jobs and check if the job fileType matches the current file
-            this.jobs.forEach(job => {
+            this.jobs.forEach((job, k) => {
+
                 if (file.endsWith(job.fileType)) {  // Use job's fileType directly
                     const rawIssues = job.scanLines(content);
-                    rawIssues.forEach(issue => {
-                        const formattedIssue = this.formatIssue(file, issue.line, issue.code, issue.isCommented);
-                        this.log.warn(`Found issue in file: "${file}" on line ${formattedIssue.line}: ${formattedIssue.code}`);
+                    rawIssues.forEach((issue, j) => {
+                        issueCounter++;
+                        const {code, filePath,isCommented, line} = this.formatIssue(file, issue.line, issue.code, issue.isCommented);
+                        this.log.system(`Issue #${issueCounter}:`);
+                        this.log.system(`   File: ${filePath}`);
+                        this.log.system(`   Line: ${line}`);
+                        this.log.system(`   Code: ${code}`);
+                        if (isCommented) {
+                            this.log.warn('    Note: This issue is in commented code');
+                        }
+                        this.log.system(''); // Empty line for readability
                     });
                 }
+
+                // job.fixSuggestion?.forEach((suggestion, index) => {
+                //     this.log.system(suggestion);
+                // })
+                
             });
         });
 
