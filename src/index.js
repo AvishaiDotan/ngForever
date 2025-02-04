@@ -9,7 +9,6 @@ const FindNgForWithoutTrackByCallbackJob_1 = require("./jobs/FindNgForWithoutTra
 // CliConfig
 const cli_parser_service_1 = require("./base/cli-parser.service");
 const cliParserConfig = cli_parser_service_1.CliParserService.getInstance().getConfig();
-console.log("🚀 ~ cliParserConfig:", cliParserConfig);
 const loggerService = logger_service_1.LoggerService.getInstance(cliParserConfig.logLevel);
 const inquiryService = inquirer_service_1.InquiryService;
 const setupService = setup_service_1.SetupService.getInstance(loggerService);
