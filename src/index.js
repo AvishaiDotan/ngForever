@@ -11,7 +11,7 @@ const cli_parser_service_1 = require("./base/cli-parser.service");
 const cliParserConfig = cli_parser_service_1.CliParserService.getInstance().getConfig();
 const loggerService = logger_service_1.LoggerService.getInstance(cliParserConfig.logLevel);
 const inquiryService = inquirer_service_1.InquiryService;
-const setupService = setup_service_1.SetupService.getInstance(loggerService);
+const setupService = setup_service_1.SetupService.getInstance(loggerService, cliParserConfig.path);
 setupService.initialize();
 const reader = index_1.Reader.getInstance([new FindNgForWithoutTrackByCallbackJob_1.FindNgForWithoutTrackByCallbackJob({ skipCommented: cliParserConfig.skipCommented })], loggerService);
 const result = reader.scan(cliParserConfig.path);

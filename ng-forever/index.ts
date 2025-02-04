@@ -13,7 +13,7 @@ const cliParserConfig: CliParserConfig = CliParserService.getInstance().getConfi
 
 const loggerService = LoggerService.getInstance(cliParserConfig.logLevel);
 const inquiryService = InquiryService;
-const setupService = SetupService.getInstance(loggerService);
+const setupService = SetupService.getInstance(loggerService, cliParserConfig.path);
 
 setupService.initialize();
 
