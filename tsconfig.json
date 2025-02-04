@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "src",
+    "module": "CommonJS",
+    "target": "ES6",
+    "strict": true,
+    "noImplicitAny": true
+  },
+  "include": ["ng-forever"],
+  "exclude": ["node_modules"]
+}

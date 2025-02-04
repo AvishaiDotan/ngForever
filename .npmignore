@@ -1,0 +1,5 @@
+base/
+tsconfig.json
+node_modules/
+*.ts
+*.ts
