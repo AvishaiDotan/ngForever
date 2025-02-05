@@ -22,3 +22,5 @@ CopyEdit
 `ng-forever --path "src/app" --exportPdf` 
 
 will analyze the Angular project in the `src/app` directory and export the results as a well-formatted PDF.
+
+![image](https://github.com/user-attachments/assets/a368797e-82cf-48a0-b82b-7cc042f4e261)
