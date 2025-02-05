@@ -1,9 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { JobBase } from "../jobs/base/JobBase";
-import { ILoggerService } from "../base/logger.service";
+import { ILoggerService, LoggerService } from "../base/logger.service";
+import { RunConfigService } from '../base/config.service';
+import { FindNgForWithoutTrackByCallbackJob } from '../jobs/FindNgForWithoutTrackByCallbackJob';
+import * as semver from 'semver';
 
-interface ScanResult {
+interface IScanResult {
     stats: {
         filesScanned: number;
         directoriesScanned: number;
@@ -19,15 +22,19 @@ class Reader {
     private jobs: JobBase[];
     private log: ILoggerService;
 
-    private constructor(jobs: JobBase[], log: ILoggerService) {
+    private constructor(jobs: JobBase[]) {
         this.jobs = jobs;
-        this.log = log;
+        this.log = LoggerService.getInstance();
+    }
+
+    public static initiate(): IScanResult {
+        return Reader.getInstance([new FindNgForWithoutTrackByCallbackJob()]).scan();
     }
 
     // Singleton getInstance method
-    public static getInstance(jobs: JobBase[], log: ILoggerService): Reader {
+    public static getInstance(jobs: JobBase[]): Reader {
         if (!Reader.instance) {
-            Reader.instance = new Reader(jobs, log);
+            Reader.instance = new Reader(jobs);
         }
         return Reader.instance;
     }
@@ -98,7 +105,8 @@ class Reader {
     }
 
     // Method to scan the directory and run the jobs on files that match the job criteria
-    public scan(directory: string): ScanResult {
+    public scan(): IScanResult {
+        const directory = RunConfigService.getInstance().path;
         this.log.info('Starting scan...');
 
         const jobsFileTypes = this.jobs.map(job => job.fileType);
@@ -106,30 +114,31 @@ class Reader {
         let issueCounter = 0;
 
         this.jobs.forEach((job) => {
+            if (this.isVersionValid(RunConfigService.getInstance().angularVersion, job.supportedVersions)) {
+                filesToScan.forEach((file) => {
+                    this.filesScanned++;
+                    this.log.debug(`Scanning file: "${file}"`);
+                    const content = fs.readFileSync(file, 'utf8');
 
-            filesToScan.forEach((file) => {
-                this.filesScanned++;
-                this.log.debug(`Scanning file: "${file}"`);
-                const content = fs.readFileSync(file, 'utf8');
+                    if (file.endsWith(job.fileType)) {
+                        const rawIssues = job.scanLines(content);
+                        rawIssues.forEach((issue) => {
+                            issueCounter++;
+                            const { code, filePath, isCommented, line } = this.formatIssue(file, issue.line, issue.code, issue.isCommented);
+                            this.log.logIssue(issueCounter, filePath, line, code);
+                            if (isCommented) {
+                                this.log.warn('    Note: This issue is in commented code');
+                            }
+                        });
+                    }
 
-                if (file.endsWith(job.fileType)) {
-                    const rawIssues = job.scanLines(content);
-                    rawIssues.forEach((issue) => {
-                        issueCounter++;
-                        const { code, filePath, isCommented, line } = this.formatIssue(file, issue.line, issue.code, issue.isCommented);
-                        this.log.issue(issueCounter, filePath, line, code);
-                        if (isCommented) {
-                            this.log.warn('    Note: This issue is in commented code');
-                        }
-                    });
+                });
+                if (issueCounter !== 0 && RunConfigService.getInstance().showFixSuggestion) {
+                    this.log.logFixSuggestion(job.description, job.fixSuggestion);
                 }
-
-            });
-
-            job.fixSuggestion?.forEach((suggestion, index) => {
-                this.log.system(suggestion);
-            })
-
+            } else {
+                this.log.warn(`Skipping job "${job.description}" as it is not valid for the current version`);
+            }
         });
 
 
@@ -141,6 +150,12 @@ class Reader {
             }
         };
     }
+
+    isVersionValid(currentVersion: string, validRanges: string[]): boolean {
+        // Check if current version satisfies any of the valid ranges
+        return validRanges.some(range => semver.satisfies(currentVersion, range));
+    }
+
 }
 
-export { Reader, ScanResult };
+export { Reader, IScanResult as ScanResult };

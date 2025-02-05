@@ -34,12 +34,12 @@ ng-forever [options]
 
 ### Command Line Options
 
-| Option           | Description                              | Default           |
-|-----------------|------------------------------------------|-------------------|
-| `--logLevel`    | Set the logging verbosity               | `INFO`            |
-| `--skipCommented`| Skip checking commented code            | `false`           |
-| `--path`        | Set the directory path to check         | Current directory |
-
+| Option               | Description                              | Default           |
+|----------------------|------------------------------------------|-------------------|
+| `--logLevel`          | Set the logging verbosity               | `INFO`            |
+| `--skipCommented`     | Skip checking commented code            | `false`           |
+| `--path`              | Set the directory path to check         | Current directory |
+| `--showFixSuggestion` | Display suggestions for fixing issues  | `true`           |
 ### Log Levels
 
 The following log levels are available:

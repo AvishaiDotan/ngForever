@@ -1,7 +1,9 @@
+import { RunConfigService } from "../base/config.service";
 import { JobBase, Issue } from "./base/JobBase";
 
 export class FindNgForWithoutTrackByCallbackJob extends JobBase {
-    constructor({ skipCommented }: { skipCommented: boolean }) {
+    constructor() {
+        const skipCommented = RunConfigService.getInstance().skipCommented;
         super({
             skipCommented,
             fileType: 'html',
@@ -14,7 +16,9 @@ export class FindNgForWithoutTrackByCallbackJob extends JobBase {
                 "    2. Update your template:\n" +
                 "        Before: *ngFor=\"let item of items\"\n" +
                 "        After:  *ngFor=\"let item of items; trackBy: trackById\"\n"
-            ]
+            ],
+            supportedVersions: ['>=4.0.0'],
+            description: `ngFor directive without trackBy callback`
         });
     }
 

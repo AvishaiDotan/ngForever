@@ -1,18 +1,16 @@
+import { RunConfigService } from "./config.service";
 import { LogLevel } from "./logger.service";
-
-export interface CliParserConfig {
-    path: string;
-    logLevel: LogLevel;
-    skipCommented: boolean;
-    [key: string]: any;
-}
 
 export class CliParserService {
     private static instance: CliParserService;
-    private config: CliParserConfig;
 
     private constructor() {
-        this.config = this.parse(process.argv);
+        const parsedConfig = this.parse(process.argv);
+        RunConfigService.getInstance().updateConfig(parsedConfig);
+    }
+
+    public static initiate(): void {
+        CliParserService.getInstance();
     }
 
     public static getInstance(): CliParserService {
@@ -22,38 +20,37 @@ export class CliParserService {
         return CliParserService.instance;
     }
 
-    public parse(argv: string[]): CliParserConfig {
-        const config: CliParserConfig = {
-            path: process.cwd(),
-            logLevel: LogLevel.INFO,
-            skipCommented: false,
-        };
+    public parse(argv: string[]): { [key: string]: any } {
+        // Remove first two elements (node path and script path)
+        const args = argv.slice(2);
+        const config: { [key: string]: any } = {};
 
-        for (let i = 2; i < argv.length; i++) {
-            if (argv[i].startsWith("--")) {
-                const key = argv[i].substring(2);
-                const value = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : "true";
-                config[key] = this.parseValue(value);
-                if (argv[i + 1] && !argv[i + 1].startsWith("--")) i++;
+        for (let i = 0; i < args.length; i++) {
+            const arg = args[i];
+
+            // Check if argument is a parameter (starts with --)
+            if (arg.startsWith('--')) {
+                const paramName = arg.slice(2); // Remove -- prefix
+                const nextArg = args[i + 1];
+
+                // Check if next argument exists and is not another parameter
+                if (nextArg && !nextArg.startsWith('--')) {
+                    // Try parsing as number
+                    const numberValue = Number(nextArg);
+                    if (!isNaN(numberValue)) {
+                        config[paramName] = numberValue;
+                    } else {
+                        // If not a number, store as string
+                        config[paramName] = nextArg;
+                    }
+                    i++; // Skip next argument since we've used it as a value
+                } else {
+                    // No value after parameter, treat as boolean flag
+                    config[paramName] = true;
+                }
             }
         }
 
-        config.path = config.path || process.cwd();
-        config.logLevel = (config.logLevel as LogLevel) || LogLevel.INFO;
-        config.skipCommented = config.skipCommented === true;
-
         return config;
-    }
-
-    private parseValue(value: string): any {
-        if (value === "true") return true;
-        if (value === "false") return false;
-        if (typeof value === "string") return value;
-        if (!isNaN(Number(value))) return Number(value);
-        return value;
-    }
-
-    public getConfig(): CliParserConfig {
-        return this.config;
     }
 }

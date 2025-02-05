@@ -1,72 +1,71 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
 import { ILoggerService } from '../base/logger.service';
-
+import { RunConfigService } from '../base/config.service';
+import { LoggerService } from '../base/logger.service';
 class SetupService {
   private static instance: SetupService;
   private _loggerService: ILoggerService;
   private config: any;
+  private path: string | undefined = undefined;
 
-  private constructor(private loggerService: ILoggerService) {
-    this._loggerService = loggerService;
+  private constructor() {
+    this._loggerService = LoggerService.getInstance();
     this.config = {};
+    this.path = RunConfigService.getInstance().path;
   }
 
-  public static getInstance(loggerService: ILoggerService): SetupService {
+  public static getInstance(): SetupService {
     if (!SetupService.instance) {
-      SetupService.instance = new SetupService(loggerService);
+      SetupService.instance = new SetupService();
     }
     return SetupService.instance;
   }
 
-  private async identifyAngularVersion(): Promise<[Error | null, string | null]> {
-    this._loggerService.info('Checking for Angular version...');
-  
-    return new Promise<[Error | null, string | null]>((resolve) => {
-      exec('npm list @angular/core', (error: any, stdout: string, stderr: any) => {
-        if (error) {
-            
-          // Enhanced error handling: check if it’s a problem executing the command or missing package
-          let errorMessage = 'An unknown error occurred while trying to execute the npm list command';
-  
-          if (stderr) {
-            errorMessage = `Error executing npm list: ${stderr}`;
-          } else if (error.message.includes('missing:')) {
-            errorMessage = 'Angular is not installed in this project';
-          } else if (error.message.includes('ENOENT')) {
-            errorMessage = 'npm command not found. Ensure npm is installed and accessible.';
-          } else if (error.message.includes('EACCES')) {
-            errorMessage = 'Permission denied while executing npm list. Check your permissions.';
-          } else {
-            errorMessage = `Error executing npm list: ${error.message}`;
-          }
-  
-          // Log the error
-          this._loggerService.error(errorMessage);
-          resolve([new Error(errorMessage), null]); // Resolve with error and null result
-          return;
-        }
-  
-        try {
-          const versionMatch = stdout.match(/@angular\/core@(\d+\.\d+\.\d+)/);
-  
-          if (versionMatch && versionMatch[1]) {
-            this._loggerService.info(`Angular version identified: ${versionMatch[1]}`);
-            resolve([null, versionMatch[1]]); // Resolve with null error and version
-          } else {
-            const errorMessage = 'Could not determine Angular version from npm list output';
-            this._loggerService.error(errorMessage);
-            resolve([new Error(errorMessage), null]); // Resolve with error and null result
-          }
-        } catch (parseError) {
-          const errorMessage = `Error parsing npm output: ${(parseError as Error)?.message}`;
-          this._loggerService.error(errorMessage);
-          resolve([new Error(errorMessage), null]); // Resolve with error and null result
-        }
-      });
-    });
+  private identifyAngularVersion(): string | null {
+    const path = this.path || process.cwd();
+    this._loggerService.info('Checking for package.json in the current directory...');
+
+    const packageJsonPath = join(path, 'package.json');
+
+    if (!existsSync(packageJsonPath)) {
+      this._loggerService.warn('No package.json found. This may not be a Node.js project.');
+      return null;
+    }
+
+    try {
+      this._loggerService.debug('package.json found. Reading file...');
+      const packageJsonContent = readFileSync(packageJsonPath, 'utf-8');
+
+      this._loggerService.debug('Parsing package.json...');
+      const packageJson = JSON.parse(packageJsonContent);
+
+      if (!packageJson || typeof packageJson !== 'object') {
+        this._loggerService.error('Error: Invalid package.json format.');
+        return null;
+      }
+
+      this._loggerService.info('Looking for Angular version in dependencies...');
+      const angularCoreVersion: string | undefined =
+        packageJson.dependencies?.['@angular/core'] ||
+        packageJson.devDependencies?.['@angular/core'];
+
+      if (angularCoreVersion && typeof angularCoreVersion === 'string') {
+        const cleanedVersion = angularCoreVersion.replace(/^[^0-9]+/, ''); // Remove caret, tilde, etc.
+        this._loggerService.info(`Angular version detected: ${cleanedVersion}`);
+        return cleanedVersion;
+      } else {
+        this._loggerService.warn('No Angular dependencies found. This may not be an Angular project.');
+        return null;
+      }
+    } catch (error) {
+      this._loggerService.warn('Error reading or parsing package.json:' + (error as Error).message);
+      return null;
+    }
   }
+
 
   private loadConfigFromFile(): void {
     const configPath = path.resolve('ng-forever.json');
@@ -91,17 +90,15 @@ class SetupService {
     };
   }
 
-  public async initialize(): Promise<void> {
-    
-    this._loggerService.printWelcome();
+  public async initiate(): Promise<void> {
     this._loggerService.info('Identifying system variables...');
-    
-    const [error, angularVersion] = await this.identifyAngularVersion();
-    if (error) {
-      this._loggerService.error('Error identifying Angular version:' + " " + error);
-    }
+
+    const angularVersion = this.identifyAngularVersion() || "";
+    this._loggerService.debug('Setting up configuration...');
+
+    RunConfigService.getInstance().angularVersion = angularVersion;
+
     if (angularVersion) {
-      this._loggerService.info(`Angular service identified with version: ${angularVersion}`);
       this.loadConfigFromFile();
     } else {
       this._loggerService.warn('Angular not detected or version not identified.');

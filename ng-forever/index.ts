@@ -2,25 +2,23 @@ import { LoggerService, LogLevel } from "./base/logger.service";
 import { InquiryService } from "./base/inquirer.service";
 import { SetupService } from "./services/setup.service";
 import { Reader } from "./reader/index";
+import { RunConfigService, IRunConfigService } from "./base/config.service";
 
 // Jobs
 import { FindNgForWithoutTrackByCallbackJob } from "./jobs/FindNgForWithoutTrackByCallbackJob";
 
 // CliConfig
-import { CliParserConfig, CliParserService } from "./base/cli-parser.service";
-const cliParserConfig: CliParserConfig = CliParserService.getInstance().getConfig();
+import { CliParserService } from "./base/cli-parser.service";
+CliParserService.initiate();
+
+const loggerService = LoggerService.getInstance();
+loggerService.logConfig(RunConfigService.getInstance());
+
+loggerService.logWelcome();
+SetupService.getInstance().initiate();
 
 
-const loggerService = LoggerService.getInstance(cliParserConfig.logLevel);
-const inquiryService = InquiryService;
-const setupService = SetupService.getInstance(loggerService);
-
-setupService.initialize();
-
-
-
-const reader = Reader.getInstance([new FindNgForWithoutTrackByCallbackJob({skipCommented: cliParserConfig.skipCommented})], loggerService);
-const result = reader.scan(cliParserConfig.path);
-loggerService.stats(result);
+const stats = Reader.initiate();
+loggerService.logStats(stats);
 
 

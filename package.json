@@ -1,7 +1,7 @@
 {
   "name": "ng-forever",
   "version": "1.2.0",
-  "description": "Analyzes Angular templates for *ngFor directives missing trackBy",
+  "description": "Angular optimization and convention checker that helps you find and fix common issues in your Angular applications.",
   "main": "src/index.js",
   "bin": {
     "ng-forever": "./bin/cli.js"
@@ -39,10 +39,12 @@
   "devDependencies": {
     "@types/inquirer": "^9.0.7",
     "@types/node": "^22.13.0",
+    "@types/semver": "^7.5.8",
     "typescript": "^5.7.3"
   },
   "dependencies": {
     "chalk": "^5.4.1",
-    "inquirer": "^12.4.1"
+    "inquirer": "^12.4.1",
+    "semver": "^7.7.1"
   }
 }
