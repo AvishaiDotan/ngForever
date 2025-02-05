@@ -39,10 +39,12 @@
   "devDependencies": {
     "@types/inquirer": "^9.0.7",
     "@types/node": "^22.13.0",
+    "@types/semver": "^7.5.8",
     "typescript": "^5.7.3"
   },
   "dependencies": {
     "chalk": "^5.4.1",
-    "inquirer": "^12.4.1"
+    "inquirer": "^12.4.1",
+    "semver": "^7.7.1"
   }
 }

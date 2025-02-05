@@ -1,7 +1,7 @@
 import { LogLevel } from "./logger.service";
 
 export interface IRunConfigService {
-    angularVersion: string | null;
+    angularVersion: string;
     skipCommented: boolean;
     logLevel: LogLevel;
     path: string;
@@ -11,7 +11,7 @@ export interface IRunConfigService {
 export class RunConfigService implements IRunConfigService {
     private static instance: RunConfigService;
 
-    public angularVersion: string | null = null;
+    public angularVersion: string =  "";
     public skipCommented: boolean = false;
     public logLevel: LogLevel = LogLevel.INFO;
     public path: string = process.cwd();

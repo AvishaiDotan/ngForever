@@ -8,7 +8,7 @@ interface IJobConfig {
     skipCommented: boolean;
     fileType: string;
     fixSuggestion: string[];
-    supportedVersions?: string[];
+    supportedVersions: string[];
     description: string;
 }
 
@@ -16,7 +16,7 @@ export class JobBase {
     skipCommented: boolean;
     fileType: string;
     fixSuggestion: string[] = [];
-    supportedVersions?: string[] = undefined;
+    supportedVersions: string[] = [];
     description: string = "";
 
     constructor({ skipCommented, fileType, fixSuggestion, supportedVersions, description }: IJobConfig) {

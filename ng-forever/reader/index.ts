@@ -4,6 +4,7 @@ import { JobBase } from "../jobs/base/JobBase";
 import { ILoggerService, LoggerService } from "../base/logger.service";
 import { RunConfigService } from '../base/config.service';
 import { FindNgForWithoutTrackByCallbackJob } from '../jobs/FindNgForWithoutTrackByCallbackJob';
+import * as semver from 'semver';
 
 interface IScanResult {
     stats: {
@@ -113,27 +114,30 @@ class Reader {
         let issueCounter = 0;
 
         this.jobs.forEach((job) => {
+            if (this.isVersionValid(RunConfigService.getInstance().angularVersion, job.supportedVersions)) {
+                filesToScan.forEach((file) => {
+                    this.filesScanned++;
+                    this.log.debug(`Scanning file: "${file}"`);
+                    const content = fs.readFileSync(file, 'utf8');
 
-            filesToScan.forEach((file) => {
-                this.filesScanned++;
-                this.log.debug(`Scanning file: "${file}"`);
-                const content = fs.readFileSync(file, 'utf8');
+                    if (file.endsWith(job.fileType)) {
+                        const rawIssues = job.scanLines(content);
+                        rawIssues.forEach((issue) => {
+                            issueCounter++;
+                            const { code, filePath, isCommented, line } = this.formatIssue(file, issue.line, issue.code, issue.isCommented);
+                            this.log.logIssue(issueCounter, filePath, line, code);
+                            if (isCommented) {
+                                this.log.warn('    Note: This issue is in commented code');
+                            }
+                        });
+                    }
 
-                if (file.endsWith(job.fileType)) {
-                    const rawIssues = job.scanLines(content);
-                    rawIssues.forEach((issue) => {
-                        issueCounter++;
-                        const { code, filePath, isCommented, line } = this.formatIssue(file, issue.line, issue.code, issue.isCommented);
-                        this.log.logIssue(issueCounter, filePath, line, code);
-                        if (isCommented) {
-                            this.log.warn('    Note: This issue is in commented code');
-                        }
-                    });
+                });
+                if (issueCounter !== 0 && RunConfigService.getInstance().showFixSuggestion) {
+                    this.log.logFixSuggestion(job.description, job.fixSuggestion);
                 }
-
-            });
-            if (issueCounter !== 0 && RunConfigService.getInstance().showFixSuggestion) {
-                this.log.logFixSuggestion(job.description, job.fixSuggestion);
+            } else {
+                this.log.warn(`Skipping job "${job.description}" as it is not valid for the current version`);
             }
         });
 
@@ -146,6 +150,12 @@ class Reader {
             }
         };
     }
+
+    isVersionValid(currentVersion: string, validRanges: string[]): boolean {
+        // Check if current version satisfies any of the valid ranges
+        return validRanges.some(range => semver.satisfies(currentVersion, range));
+    }
+
 }
 
 export { Reader, IScanResult as ScanResult };

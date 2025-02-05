@@ -93,7 +93,7 @@ class SetupService {
   public async initiate(): Promise<void> {
     this._loggerService.info('Identifying system variables...');
 
-    const angularVersion = this.identifyAngularVersion();
+    const angularVersion = this.identifyAngularVersion() || "";
     this._loggerService.debug('Setting up configuration...');
 
     RunConfigService.getInstance().angularVersion = angularVersion;
