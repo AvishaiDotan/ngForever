@@ -1,3 +1,3 @@
 #!/usr/bin/env node
 
-const analyzer = require('../src/index.js');
+const analyzer = require('../dist/index.js');
