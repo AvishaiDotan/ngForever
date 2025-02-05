@@ -1,6 +1,6 @@
 {
   "name": "ng-forever",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Angular optimization and convention checker that helps you find and fix common issues in your Angular applications.",
   "main": "src/index.js",
   "bin": {
