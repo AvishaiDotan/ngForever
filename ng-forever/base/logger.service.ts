@@ -55,12 +55,12 @@ class LoggerService implements ILoggerService {
 
 	public logFixSuggestion(jobDescription: string, fixSuggestions: string[]): void {
 		const separator = chalk.gray('─'.repeat(80));
-	
+
 		console.log('\n' + separator);
 		console.log(chalk.green('Fix Suggestion'));
 		console.log(separator);
 		console.log(chalk.blue('Description: ') + chalk.white(jobDescription));
-		
+
 		if (fixSuggestions.length > 0) {
 			console.log(separator);
 			console.log(chalk.blue('Suggested Fixes:'));
@@ -68,7 +68,7 @@ class LoggerService implements ILoggerService {
 				console.log(chalk.white(`\n${suggestion}`));
 			});
 		}
-	
+
 		console.log(separator + '\n');
 	}
 
@@ -97,16 +97,29 @@ class LoggerService implements ILoggerService {
 		console.log(separator + '\n');
 	}
 	public logConfig(config: RunConfigService): void {
-		if (config.logLevel !== LogLevel.DEBUG) return
-		const separator = chalk.gray('─'.repeat(80));
+		if (config.logLevel !== LogLevel.DEBUG) return;
 
+		const separator = chalk.gray('─'.repeat(80));
 		console.log('\n' + separator);
 		console.log(chalk.cyan('Configuration Settings'));
 		console.log(separator);
-		console.log(chalk.blue('Angular Version:    ') + (config.angularVersion ? chalk.green(config.angularVersion) : chalk.yellow('Not Set')));
-		console.log(chalk.blue('Skip Commented:     ') + (config.skipCommented ? chalk.green('Yes') : chalk.red('No')));
-		console.log(chalk.blue('Log Level:          ') + chalk.magenta(config.logLevel));
-		console.log(chalk.blue('Path:               ') + chalk.green(config.path));
+
+		// Loop through each key-value pair in the config object
+		for (const [key, value] of Object.entries(config)) {
+			const label = chalk.blue(key.charAt(0).toUpperCase() + key.slice(1) + ':');
+			let displayValue;
+
+			if (typeof value === 'boolean') {
+				displayValue = value ? chalk.green('Yes') : chalk.red('No');
+			} else if (value) {
+				displayValue = chalk.green(value);
+			} else {
+				displayValue = chalk.yellow('Not Set');
+			}
+
+			console.log(label + ' ' + displayValue);
+		}
+
 		console.log(separator + '\n');
 	}
 
