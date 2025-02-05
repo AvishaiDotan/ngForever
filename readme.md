@@ -40,6 +40,7 @@ ng-forever [options]
 | `--skipCommented`     | Skip checking commented code            | `false`           |
 | `--path`              | Set the directory path to check         | Current directory |
 | `--showFixSuggestion` | Display suggestions for fixing issues  | `true`           |
+| `--exportPdf` | Exports a designed pdf (More at docs/reporter)  | `false`           |
 ### Log Levels
 
 The following log levels are available:
@@ -59,6 +60,35 @@ ngForever runs a series of jobs to check your Angular application. Each job focu
 
 Detects `*ngFor` directives that don't implement a `trackBy` callback function, which can lead to performance issues.
 
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+To run the app locally for development:
+
+**Option One (Build and Run):**
+
+Bash
+
+```
+npm run build
+node .dist/index.js --path "some-directory-for-testing"
+
+```
+
+You can add other options as needed. Replace `"some-directory-for-testing"` with the path to the directory you want to analyze.
+
+**Option Two (Debugging):**
+
+Use a debugger (e.g., in your IDE) and update the arguments with the relevant options.
+
+## License
+
+MIT - See LICENSE file for details
+
+## Support
+
+If you encounter any issues or have questions, please file an issue on the GitHub repository.
 Example output:
 ```
 Issue #133
@@ -75,9 +105,36 @@ Code:    *ngFor="let site of data.flavors"
 2. Address all reported issues to maintain optimal application performance
 3. Configure the tool according to your project's specific needs
 
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+To run the app locally for development:
+
+**Option One (Build and Run):**
+
+Bash
+
+```
+npm run build
+node .dist/index.js --path "some-directory-for-testing"
+
+```
+
+You can add other options as needed. Replace `"some-directory-for-testing"` with the path to the directory you want to analyze.
+
+**Option Two (Debugging):**
+
+Use a debugger (e.g., in your IDE) and update the arguments with the relevant options.
+
+## License
+
+MIT - See LICENSE file for details
+
+## Support
+
+If you encounter any issues or have questions, please file an issue on the GitHub repository.
 
 ## License
 
