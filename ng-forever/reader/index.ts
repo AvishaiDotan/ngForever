@@ -1,10 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as puppeteer from 'puppeteer';
 import { JobBase } from "../jobs/base/JobBase";
 import { ILoggerService, LoggerService } from "../base/logger.service";
 import { RunConfigService } from '../base/config.service';
 import { FindNgForWithoutTrackByCallbackJob } from '../jobs/FindNgForWithoutTrackByCallbackJob';
 import * as semver from 'semver';
+import { IIssueData, IReportData, IFixSuggestion, ReporterService } from '../reporter/reporter.service';
 
 interface IScanResult {
     stats: {
@@ -27,8 +29,8 @@ class Reader {
         this.log = LoggerService.getInstance();
     }
 
-    public static initiate(): IScanResult {
-        return Reader.getInstance([new FindNgForWithoutTrackByCallbackJob()]).scan();
+    public static async initiate(): Promise<IScanResult> {
+        return await Reader.getInstance([new FindNgForWithoutTrackByCallbackJob()]).scan();
     }
 
     // Singleton getInstance method
@@ -105,7 +107,7 @@ class Reader {
     }
 
     // Method to scan the directory and run the jobs on files that match the job criteria
-    public scan(): IScanResult {
+    public async scan(): Promise<IScanResult> {
         const directory = RunConfigService.getInstance().path;
         this.log.info('Starting scan...');
 
@@ -113,7 +115,10 @@ class Reader {
         const filesToScan = this.getFilesToScan(directory, jobsFileTypes);
         let issueCounter = 0;
 
+        const reports: IReportData[] = [];
         this.jobs.forEach((job) => {
+            const issues: IIssueData[] = []
+            let fixSuggestion: IFixSuggestion | undefined;
             if (this.isVersionValid(RunConfigService.getInstance().angularVersion, job.supportedVersions)) {
                 filesToScan.forEach((file) => {
                     this.filesScanned++;
@@ -129,17 +134,28 @@ class Reader {
                             if (isCommented) {
                                 this.log.warn('    Note: This issue is in commented code');
                             }
+                            issues.push({ code, filePath, line });
                         });
                     }
 
                 });
                 if (issueCounter !== 0 && RunConfigService.getInstance().showFixSuggestion) {
                     this.log.logFixSuggestion(job.description, job.fixSuggestion);
+                    fixSuggestion = {
+                        description: job.description,
+                        suggestions: job.fixSuggestion
+                    }
                 }
+                reports.push({ issues, fixSuggestion });
             } else {
                 this.log.warn(`Skipping job "${job.description}" as it is not valid for the current version`);
             }
         });
+
+        if (RunConfigService.getInstance().exportPdf) {
+            const html = ReporterService.getInstance().exportReport(reports);
+            await this.exportPdf(html, RunConfigService.getInstance().path);
+        }
 
 
         return {
@@ -151,9 +167,33 @@ class Reader {
         };
     }
 
-    isVersionValid(currentVersion: string, validRanges: string[]): boolean {
+    private isVersionValid(currentVersion: string, validRanges: string[]): boolean {
         // Check if current version satisfies any of the valid ranges
         return validRanges.some(range => semver.satisfies(currentVersion, range));
+    }
+
+    private async exportPdf(
+        htmlContent: string,
+        outputPath: string
+    ): Promise<void> {
+        try {
+            const browser = await puppeteer.launch({
+                headless: true,
+            });
+            const page = await browser.newPage();
+
+            await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+            await page.pdf({
+                path: outputPath + '/ng-forever-report.pdf',
+                format: 'A4',
+                printBackground: true
+            });
+
+            await browser.close();
+            this.log.info('PDF created successfully');
+        } catch (error: any) {
+            this.log.error('PDF conversion failed:' + error?.message);
+        }
     }
 
 }

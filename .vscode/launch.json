@@ -1,44 +1,13 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}\\src\\index.js",
-            "preLaunchTask": "tsc: build - tsconfig.json",
-            "outFiles": [
-                "${workspaceFolder}/src/**/*.js"
-            ],
-            "args": [
-                "--path",
-                "C:\\Users\\dotan\\OneDrive\\שולחן העבודה\\DEV\\Reflectiz\\dashboard",
-                "--skipCommented"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch TypeScript Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/ng-forever/index.ts",
-            "preLaunchTask": "tsc: build - tsconfig.json",
-            "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
-            ],
-            "args": [
-                "--path",
-                "C:\\Users\\dotan\\OneDrive\\שולחן העבודה\\DEV\\Reflectiz\\dashboard",
-                "--skipCommented"
-            ]
-        }
-    ]
+            "name": "Debug",
+            "runtimeExecutable": "ts-node",
+            "args": ["${workspaceFolder}/ng-forever/index.ts", "--path", "C:\\Users\\dotan\\OneDrive\\שולחן העבודה\\DEV\\angular\\whatsapp", "--showReport"],
+            "cwd": "${workspaceFolder}"
+          }
+    ],
 }

@@ -6,6 +6,7 @@ export interface IRunConfigService {
     logLevel: LogLevel;
     path: string;
     showFixSuggestion: boolean;
+    exportPdf: boolean;
 }
 
 export class RunConfigService implements IRunConfigService {
@@ -16,6 +17,7 @@ export class RunConfigService implements IRunConfigService {
     public logLevel: LogLevel = LogLevel.INFO;
     public path: string = process.cwd();
     public showFixSuggestion: boolean = true;
+    public exportPdf: boolean = false;
 
     private constructor() { }
 

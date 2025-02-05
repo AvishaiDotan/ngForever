@@ -1,11 +1,7 @@
 import { LoggerService, LogLevel } from "./base/logger.service";
-import { InquiryService } from "./base/inquirer.service";
 import { SetupService } from "./services/setup.service";
 import { Reader } from "./reader/index";
 import { RunConfigService, IRunConfigService } from "./base/config.service";
-
-// Jobs
-import { FindNgForWithoutTrackByCallbackJob } from "./jobs/FindNgForWithoutTrackByCallbackJob";
 
 // CliConfig
 import { CliParserService } from "./base/cli-parser.service";
@@ -17,8 +13,17 @@ loggerService.logConfig(RunConfigService.getInstance());
 loggerService.logWelcome();
 SetupService.getInstance().initiate();
 
+async function run() {
+    try {
+        const stats = await Reader.initiate();
+        loggerService.logStats(stats);
 
-const stats = Reader.initiate();
-loggerService.logStats(stats);
+    } catch (error: any) {
+
+    }
+}
+
+run();
+
 
 
