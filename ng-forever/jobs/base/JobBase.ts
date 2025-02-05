@@ -4,21 +4,27 @@ export type Issue = {
     isCommented: boolean;
 };
 
-interface JobConfig {
+interface IJobConfig {
     skipCommented: boolean;
     fileType: string;
-    fixSuggestion?: string[]
+    fixSuggestion: string[];
+    supportedVersions?: string[];
+    description: string;
 }
 
 export class JobBase {
     skipCommented: boolean;
     fileType: string;
-    fixSuggestion?: string[];
+    fixSuggestion: string[] = [];
+    supportedVersions?: string[] = undefined;
+    description: string = "";
 
-    constructor({ skipCommented, fileType, fixSuggestion }: JobConfig) {
+    constructor({ skipCommented, fileType, fixSuggestion, supportedVersions, description }: IJobConfig) {
         this.skipCommented = skipCommented;
         this.fileType = fileType;
         this.fixSuggestion = fixSuggestion;
+        this.supportedVersions = supportedVersions;
+        this.description = description;
     }
 
     // Utility function to check if the line should be processed

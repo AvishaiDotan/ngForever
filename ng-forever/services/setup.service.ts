@@ -3,22 +3,23 @@ import * as path from 'path';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { ILoggerService } from '../base/logger.service';
-import { ConfigService } from '../base/config.service';
+import { RunConfigService } from '../base/config.service';
+import { LoggerService } from '../base/logger.service';
 class SetupService {
   private static instance: SetupService;
   private _loggerService: ILoggerService;
   private config: any;
   private path: string | undefined = undefined;
 
-  private constructor(private loggerService: ILoggerService, path?: string) {
-    this._loggerService = loggerService;
+  private constructor() {
+    this._loggerService = LoggerService.getInstance();
     this.config = {};
-    this.path = path;
+    this.path = RunConfigService.getInstance().path;
   }
 
-  public static getInstance(loggerService: ILoggerService, path: string): SetupService {
+  public static getInstance(): SetupService {
     if (!SetupService.instance) {
-      SetupService.instance = new SetupService(loggerService, path);
+      SetupService.instance = new SetupService();
     }
     return SetupService.instance;
   }
@@ -89,16 +90,14 @@ class SetupService {
     };
   }
 
-  public async initialize(): Promise<void> {
-
-    this._loggerService.printWelcome();
+  public async initiate(): Promise<void> {
     this._loggerService.info('Identifying system variables...');
 
     const angularVersion = this.identifyAngularVersion();
     this._loggerService.debug('Setting up configuration...');
 
-    ConfigService.getInstance().angularVersion = angularVersion;
-    
+    RunConfigService.getInstance().angularVersion = angularVersion;
+
     if (angularVersion) {
       this.loadConfigFromFile();
     } else {

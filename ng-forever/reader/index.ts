@@ -1,9 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { JobBase } from "../jobs/base/JobBase";
-import { ILoggerService } from "../base/logger.service";
+import { ILoggerService, LoggerService } from "../base/logger.service";
+import { RunConfigService } from '../base/config.service';
+import { FindNgForWithoutTrackByCallbackJob } from '../jobs/FindNgForWithoutTrackByCallbackJob';
 
-interface ScanResult {
+interface IScanResult {
     stats: {
         filesScanned: number;
         directoriesScanned: number;
@@ -19,15 +21,19 @@ class Reader {
     private jobs: JobBase[];
     private log: ILoggerService;
 
-    private constructor(jobs: JobBase[], log: ILoggerService) {
+    private constructor(jobs: JobBase[]) {
         this.jobs = jobs;
-        this.log = log;
+        this.log = LoggerService.getInstance();
+    }
+
+    public static initiate(): IScanResult {
+        return Reader.getInstance([new FindNgForWithoutTrackByCallbackJob()]).scan();
     }
 
     // Singleton getInstance method
-    public static getInstance(jobs: JobBase[], log: ILoggerService): Reader {
+    public static getInstance(jobs: JobBase[]): Reader {
         if (!Reader.instance) {
-            Reader.instance = new Reader(jobs, log);
+            Reader.instance = new Reader(jobs);
         }
         return Reader.instance;
     }
@@ -98,7 +104,8 @@ class Reader {
     }
 
     // Method to scan the directory and run the jobs on files that match the job criteria
-    public scan(directory: string): ScanResult {
+    public scan(): IScanResult {
+        const directory = RunConfigService.getInstance().path;
         this.log.info('Starting scan...');
 
         const jobsFileTypes = this.jobs.map(job => job.fileType);
@@ -117,7 +124,7 @@ class Reader {
                     rawIssues.forEach((issue) => {
                         issueCounter++;
                         const { code, filePath, isCommented, line } = this.formatIssue(file, issue.line, issue.code, issue.isCommented);
-                        this.log.issue(issueCounter, filePath, line, code);
+                        this.log.logIssue(issueCounter, filePath, line, code);
                         if (isCommented) {
                             this.log.warn('    Note: This issue is in commented code');
                         }
@@ -125,11 +132,9 @@ class Reader {
                 }
 
             });
-
-            job.fixSuggestion?.forEach((suggestion, index) => {
-                this.log.system(suggestion);
-            })
-
+            if (issueCounter !== 0 && RunConfigService.getInstance().showFixSuggestion) {
+                this.log.logFixSuggestion(job.description, job.fixSuggestion);
+            }
         });
 
 
@@ -143,4 +148,4 @@ class Reader {
     }
 }
 
-export { Reader, ScanResult };
+export { Reader, IScanResult as ScanResult };
