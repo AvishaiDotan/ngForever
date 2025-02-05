@@ -22,7 +22,7 @@
 
 ---
 
-## [1.2.1]
+## [1.2.3]
 ### Added
 - Added flag to command-line tool with export functionality: `--exportPdf`
 - Added debugger configs
